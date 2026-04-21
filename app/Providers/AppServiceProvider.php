@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -34,7 +33,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureModels();
         $this->configureUrl();
         $this->configureVite();
-        $this->configureSecurity();
     }
 
     /**
@@ -94,11 +92,6 @@ final class AppServiceProvider extends ServiceProvider
         Vite::usePrefetchStrategy(
             $this->isProduction() ? 'aggressive' : 'hover'
         );
-    }
-
-    private function configureSecurity(): void
-    {
-        Http::preventStrayRequests(! $this->isTesting());
     }
 
     private function isProduction(): bool
