@@ -10,14 +10,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use SensitiveParameter;
-use Throwable;
 
 final readonly class CreateUserPassword
 {
     /**
      * @param  array<string, mixed>  $credentials
-     *
-     * @throws Throwable
      */
     public function handle(array $credentials, #[SensitiveParameter] string $password): mixed
     {

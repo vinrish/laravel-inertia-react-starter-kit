@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Actions\User\CreateUser;
+use App\Actions\User\DeleteUser;
+use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\DeleteUserRequest;
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Response;
+
+final readonly class UserController
+{
+    public function create(): Response
+    {
+        return inertia('user/create');
+    }
+
+    public function store(CreateUserRequest $request, CreateUser $action): RedirectResponse
+    {
+        /** @var array<string, mixed> $attributes */
+        $attributes = $request->safe()->except('password');
+
+        $user = $action->handle(
+            $attributes,
+            $request->string('password')->value()
+        );
+
+        Auth::login($user);
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
+
+    public function destroy(DeleteUserRequest $request, #[CurrentUser] User $user, DeleteUser $action): RedirectResponse
+    {
+        Auth::logout();
+
+        $action->handle($user);
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+}

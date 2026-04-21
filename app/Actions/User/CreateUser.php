@@ -8,14 +8,11 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\DB;
 use SensitiveParameter;
-use Throwable;
 
 final readonly class CreateUser
 {
     /**
      * @param  array<string, mixed>  $attributes
-     *
-     * @throws Throwable
      */
     public function handle(array $attributes, #[SensitiveParameter] string $password): User
     {
