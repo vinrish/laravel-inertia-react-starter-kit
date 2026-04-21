@@ -75,7 +75,7 @@ final class AppServiceProvider extends ServiceProvider
     private function configureUrl(): void
     {
         URL::forceScheme('https');
-        URL::forceHttps(true);
+        //        URL::forceHttps(true);
     }
 
     /**
