@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -44,10 +45,10 @@ final class AppServiceProvider extends ServiceProvider
         Date::use(CarbonImmutable::class);
 
         DB::prohibitDestructiveCommands(
-            app()->isProduction(),
+            $this->isProduction(),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
+        Password::defaults(fn (): ?Password => $this->isProduction()
             ? Password::min(12)
                 ->mixedCase()
                 ->letters()
@@ -67,7 +68,7 @@ final class AppServiceProvider extends ServiceProvider
 
         Model::unguard();
 
-        Model::preventLazyLoading(! app()->isProduction());
+        Model::preventLazyLoading(! $this->isProduction());
     }
 
     /**
@@ -84,17 +85,29 @@ final class AppServiceProvider extends ServiceProvider
      */
     private function configureVite(): void
     {
-        if (app()->runningUnitTests()) {
+        if ($this->isTesting()) {
             config(['inertia.ssr.enabled' => false]);
+
+            return;
         }
 
         Vite::usePrefetchStrategy(
-            app()->isProduction() ? 'aggressive' : 'hover'
+            $this->isProduction() ? 'aggressive' : 'hover'
         );
     }
 
     private function configureSecurity(): void
     {
-        Http::preventStrayRequests(true);
+        Http::preventStrayRequests(! $this->isTesting());
+    }
+
+    private function isProduction(): bool
+    {
+        return App::isProduction();
+    }
+
+    private function isTesting(): bool
+    {
+        return App::runningUnitTests();
     }
 }
