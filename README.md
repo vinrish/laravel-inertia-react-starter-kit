@@ -23,8 +23,7 @@ Modern PHP has evolved into a mature, type-safe language, yet many Laravel proje
 - **Just Better Laravel Defaults**: Configured App Defaults / strict models, auto eager loading, immutable dates, and more...
 - **AI Guidelines**: Integrated AI Guidelines to assist in maintaining code quality and consistency
 - **Full Testing Suite**: More than 150 tests with 100% code coverage using Pest
--
-This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
+- This isn't just another Laravel boilerplate—it's a statement that PHP applications can and should be built with the same rigor as strongly-typed languages like Rust or TypeScript.
 
 ## Getting Started
 
@@ -72,19 +71,23 @@ You should see 100% test coverage and all quality checks passing.
 ## Available Tooling
 
 ### Development
+
 - `composer dev` - Starts Laravel server, queue worker, log monitoring, and Vite+ dev server concurrently
 
 ### Code Quality
+
 - `composer lint` - Runs Rector (refactoring), Pint (PHP formatting), and Oxfmt (JS/TS formatting)
 - `composer test:lint` - Dry-run mode for CI/CD pipelines
 
 ### Testing
+
 - `composer test:type-coverage` - Ensures 100% type coverage with Pest
 - `composer test:types` - Runs PHPStan at level 9 (maximum strictness)
 - `composer test:unit` - Runs Pest tests with 100% code coverage requirement
 - `composer test` - Runs the complete test suite (type coverage, unit tests, linting, static analysis)
 
 ### Maintenance
+
 - `composer update:requirements` - Updates all PHP and Bun dependencies to latest versions
 
 ## License
