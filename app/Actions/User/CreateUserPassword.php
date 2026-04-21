@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions\User;
+
+use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use SensitiveParameter;
+use Throwable;
+
+final readonly class CreateUserPassword
+{
+    /**
+     * @param  array<string, mixed>  $credentials
+     *
+     * @throws Throwable
+     */
+    public function handle(array $credentials, #[SensitiveParameter] string $password): mixed
+    {
+        return DB::transaction(fn (): mixed => Password::reset(
+            $credentials,
+            function (User $user) use ($password): void {
+                $user->update([
+                    'password' => $password,
+                    'remember_token' => Str::random(60),
+                ]);
+
+                event(new PasswordReset($user));
+            }
+        ));
+    }
+}
