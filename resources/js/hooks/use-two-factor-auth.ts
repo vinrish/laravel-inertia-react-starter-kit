@@ -1,6 +1,6 @@
-import { useHttp } from '@inertiajs/react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor';
+import type { TwoFactorSecretKey, TwoFactorSetupData } from '@/types';
 
 export type UseTwoFactorAuthReturn = {
     qrCodeSvg: string | null;
@@ -10,7 +10,6 @@ export type UseTwoFactorAuthReturn = {
     errors: string[];
     clearErrors: () => void;
     clearSetupData: () => void;
-    clearTwoFactorAuthData: () => void;
     fetchQrCode: () => Promise<void>;
     fetchSetupKey: () => Promise<void>;
     fetchSetupData: () => Promise<void>;
@@ -19,9 +18,19 @@ export type UseTwoFactorAuthReturn = {
 
 export const OTP_MAX_LENGTH = 6;
 
-export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
-    const { submit } = useHttp();
+const fetchJson = async <T>(url: string): Promise<T> => {
+    const response = await fetch(url, {
+        headers: { Accept: 'application/json' },
+    });
 
+    if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.status}`);
+    }
+
+    return response.json();
+};
+
+export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
     const [qrCodeSvg, setQrCodeSvg] = useState<string | null>(null);
     const [manualSetupKey, setManualSetupKey] = useState<string | null>(null);
     const [recoveryCodesList, setRecoveryCodesList] = useState<string[]>([]);
@@ -29,70 +38,58 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
     const hasSetupData = qrCodeSvg !== null && manualSetupKey !== null;
 
-    const clearErrors = useCallback((): void => {
-        setErrors([]);
-    }, []);
-
-    const clearSetupData = useCallback((): void => {
-        setManualSetupKey(null);
-        setQrCodeSvg(null);
-        setErrors([]);
-    }, []);
-
-    const clearTwoFactorAuthData = useCallback((): void => {
-        setManualSetupKey(null);
-        setQrCodeSvg(null);
-        setErrors([]);
-        setRecoveryCodesList([]);
-    }, []);
-
-    const fetchQrCode = useCallback(async (): Promise<void> => {
+    const fetchQrCode = async (): Promise<void> => {
         try {
-            const { svg } = (await submit(qrCode())) as {
-                svg: string;
-                url: string;
-            };
-
+            const { svg } = await fetchJson<TwoFactorSetupData>(qrCode.url());
             setQrCodeSvg(svg);
         } catch {
             setErrors((prev) => [...prev, 'Failed to fetch QR code']);
             setQrCodeSvg(null);
         }
-    }, [submit]);
+    };
 
-    const fetchSetupKey = useCallback(async (): Promise<void> => {
+    const fetchSetupKey = async (): Promise<void> => {
         try {
-            const { secretKey: key } = (await submit(secretKey())) as {
-                secretKey: string;
-            };
-
+            const { secretKey: key } = await fetchJson<TwoFactorSecretKey>(
+                secretKey.url(),
+            );
             setManualSetupKey(key);
         } catch {
             setErrors((prev) => [...prev, 'Failed to fetch a setup key']);
             setManualSetupKey(null);
         }
-    }, [submit]);
+    };
 
-    const fetchRecoveryCodes = useCallback(async (): Promise<void> => {
+    const clearErrors = (): void => {
+        setErrors([]);
+    };
+
+    const clearSetupData = (): void => {
+        setManualSetupKey(null);
+        setQrCodeSvg(null);
+        clearErrors();
+    };
+
+    const fetchRecoveryCodes = async (): Promise<void> => {
         try {
-            setErrors([]);
-            const codes = (await submit(recoveryCodes())) as string[];
+            clearErrors();
+            const codes = await fetchJson<string[]>(recoveryCodes.url());
             setRecoveryCodesList(codes);
         } catch {
             setErrors((prev) => [...prev, 'Failed to fetch recovery codes']);
             setRecoveryCodesList([]);
         }
-    }, [submit]);
+    };
 
-    const fetchSetupData = useCallback(async (): Promise<void> => {
+    const fetchSetupData = async (): Promise<void> => {
         try {
-            setErrors([]);
+            clearErrors();
             await Promise.all([fetchQrCode(), fetchSetupKey()]);
         } catch {
             setQrCodeSvg(null);
             setManualSetupKey(null);
         }
-    }, [fetchQrCode, fetchSetupKey]);
+    };
 
     return {
         qrCodeSvg,
@@ -102,7 +99,6 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
         errors,
         clearErrors,
         clearSetupData,
-        clearTwoFactorAuthData,
         fetchQrCode,
         fetchSetupKey,
         fetchSetupData,

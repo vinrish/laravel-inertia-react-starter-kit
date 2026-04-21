@@ -84,6 +84,10 @@ final class AppServiceProvider extends ServiceProvider
      */
     private function configureVite(): void
     {
+        if (app()->runningUnitTests()) {
+            config(['inertia.ssr.enabled' => false]);
+        }
+
         Vite::usePrefetchStrategy(
             app()->isProduction() ? 'aggressive' : 'hover'
         );
