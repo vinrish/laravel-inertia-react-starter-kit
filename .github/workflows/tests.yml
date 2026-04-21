@@ -2,11 +2,9 @@ name: tests
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   pull_request:
-    branches:
-      - master
+    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,9 +14,10 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     strategy:
       matrix:
-        php-version: [ '8.5' ]
+        php-version: ['8.5']
 
     steps:
       - name: Checkout code
@@ -34,58 +33,28 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: '20'
+          cache: 'pnpm'   # ✅ FIXED
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
-          run_install: false
 
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: '24'
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Cache Composer Dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install PHP Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
-
-      - name: Copy Environment File
+      - name: Copy env
         run: cp .env.example .env
 
-      - name: Generate Application Key
+      - name: Generate key
         run: php artisan key:generate
 
-      - name: Install Node Dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Node dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Build Assets
-        run: pnpm build
+      - name: Build assets
+        run: pnpm run build   # ✅ FIXED
 
-      - name: Cache Rector
-        uses: actions/cache@v4
-        with:
-          path: /tmp/rector
-          key: ${{ runner.os }}-rector-${{ hashFiles('composer.lock') }}
-          restore-keys: ${{ runner.os }}-rector-
-
-      - name: Cache PHPStan
-        uses: actions/cache@v4
-        with:
-          path: /tmp/phpstan
-          key: ${{ runner.os }}-phpstan-${{ hashFiles('composer.lock') }}
-          restore-keys: ${{ runner.os }}-phpstan-
-
-      - name: Create Cache Directories
-        run: mkdir -p /tmp/rector /tmp/phpstan
-
-      - name: Tests
+      - name: Run tests
         run: composer test
