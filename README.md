@@ -1,4 +1,4 @@
-- Inertia & React (this project) version: **[github.com/vinrish/laravel-inertia-react-starter-kit](https://github.com/nunomaduro/laravel-starter-kit-inertia-react)**
+- Inertia & React (this project) version: **[github.com/vinrish/laravel-inertia-react-starter-kit](https://github.com/vinrish/laravel-inertia-react-starter-kit)**
 
 <p>
     <a href="https://github.com/vinrish/laravel-inertia-react-starter-kit/actions"><img src="https://github.com/vinrish/laravel-inertia-react-starter-kit/actions/workflows/tests.yml/badge.svg" alt="Build Status"></a>
